@@ -57,4 +57,7 @@ app.post("/ping", bodyParser.json(), function(req, res) {
   return res.status(201).json({ pong: true });
 });
 
-server.listen(8985, "127.0.0.1");
+server.listen(
+  parseInt(process.env.HTTP_PORT || 8080, 10),
+  process.env.HTTP_HOST || "0.0.0.0"
+);
