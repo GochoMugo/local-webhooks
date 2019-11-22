@@ -1,0 +1,11 @@
+{
+  "bin": {
+    "lw-client": "bin/lw-client",
+    "lw-server": "bin/lw-server"
+  },
+  "dependencies": {
+    "@forfuture/wserver": "gitlab:forfuture/wserver#master",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1"
+  }
+}
