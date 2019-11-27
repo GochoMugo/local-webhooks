@@ -10,11 +10,10 @@ if (!configFilepath) {
 }
 
 const config = require(path.resolve(configFilepath));
+const remoteUrl = config.remoteUrl || "https://lw.gocho.live/ws";
 const localApps = config.localApps || [];
 const websocket = new wserver.Client(
-  `${config.remoteUrl}?appSecrets=${localApps
-    .map((a) => a.appSecret)
-    .join(",")}`
+  `${remoteUrl}?appSecrets=${localApps.map((a) => a.appSecret).join(",")}`
 );
 
 websocket.on("request", function(websocketNotification) {
