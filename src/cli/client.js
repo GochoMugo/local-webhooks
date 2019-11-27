@@ -10,8 +10,12 @@ if (!configFilepath) {
 }
 
 const config = require(path.resolve(configFilepath));
-const websocket = new wserver.Client(config.remoteUrl);
 const localApps = config.localApps || [];
+const websocket = new wserver.Client(
+  `${config.remoteUrl}?appSecrets=${localApps
+    .map((a) => a.appSecret)
+    .join(",")}`
+);
 
 websocket.on("request", function(websocketNotification) {
   const localApp = localApps.find(

@@ -7,6 +7,10 @@ const express = require("express");
 const app = express();
 const server = http.Server(app);
 const websocketServer = new wserver.Server(server, {
+  authenticateSocket(req) {
+    const appSecrets = (req.query.appSecrets || "").split(",");
+    return { appSecrets };
+  },
   handleRequest(req) {
     switch (req.action) {
       case "response":
@@ -27,14 +31,21 @@ app.post("/webhook/:appSecret", function(req, res) {
   req.on("end", function() {
     webhookResponses[id] = res;
 
-    websocketServer.notifyAll("request", {
-      notificationId: id,
-      appSecret: req.params.appSecret,
-      webhookPayload: {
-        body: chunks.join(""),
-        headers: req.headers
-      }
-    });
+    const sockets = websocketServer.sockets.filter((socket) =>
+      socket.profile.appSecrets.includes(req.params.appSecret)
+    );
+    Promise.all(
+      sockets.map((socket) =>
+        socket.notify("request", {
+          notificationId: id,
+          appSecret: req.params.appSecret,
+          webhookPayload: {
+            body: chunks.join(""),
+            headers: req.headers
+          }
+        })
+      )
+    );
   });
 });
 
