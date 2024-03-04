@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Local Webhooks</title>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Oswald:wght@200..700&display=swap">
+        <link rel="stylesheet" href="https://unpkg.com/animate.css@4.1.1/animate.min.css" >
+        <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/fontawesome.min.css" >
+        <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/solid.min.css" >
+        <link rel="stylesheet" href="https://unpkg.com/prismjs@1.29.0/themes/prism-solarizedlight.min.css" >
+        <style>
+            /* Presets. */
+            body {
+                margin: 0;
+            }
+            body, p {
+                font-family: Cardo, sans-serif;
+            }
+
+            /* Page header. */
+            section.header {
+                background-color: #f6d4a6;
+                font-family: Oswald, sans-serif;
+                padding: 40px 10px;
+                text-align: center;
+            }
+            section.header h1 {
+                font-size: 4em;
+                margin: 0;
+                text-transform: uppercase;
+            }
+            section.header p {
+                font-size: 1.3em;
+            }
+
+            /* Content section. */
+            section.content {
+                margin-left: 20%;
+                margin-bottom: 80px;
+                width: 60%;
+            }
+            @media (max-device-width : 480px) {
+                section.content {
+                    margin-left: 5%;
+                    width: 90%;
+                }
+            }
+
+            /* Page footer */
+            section.footer {
+                color: gray;
+                padding: 20px 0;
+                text-align: center;
+            }
+
+            /* Demo. */
+            section.demo {
+                display: flex;
+                justify-content: space-around;
+                padding: 5em;
+            }
+            @media (max-device-width : 480px) {
+                section.demo {
+                    display: none;
+                }
+            }
+            div.demo-frame {
+                border: 1px solid lightgray;
+                border-radius: 8px;
+                height: 210px;
+                width: 210px;
+            }
+            div.demo-frame-content {
+                align-items: center;
+                display: flex;
+                font-family: monospace;
+                height: 62%;
+                justify-content: center;
+                text-align: center;
+            }
+            div.demo-frame-navbar {
+                background-color: darkgray;
+                border-radius: 8px 8px 0 0;
+                padding: 8px;
+                text-align: center;
+            }
+            div.demo-info {
+                margin-top: 20px;
+                text-align: center;
+            }
+            div.demo-node {
+                align-items: center;
+                display: flex;
+                flex-direction: column;
+                height: 210px;
+                justify-content: center;
+                width: 210px;
+            }
+            div.demo-node i {
+                color: #575656;
+                font-size: 5em;
+            }
+            div.demo-node .title {
+                border: 0;
+                padding: 10px;
+                text-align: center;
+            }
+            div.demo-node-link {
+                align-items: center;
+                display: flex;
+                font-size: 2em;
+                position: relative;
+            }
+            @media (max-device-width : 1000px) {
+                div.demo-node-link {
+                    display: none;
+                }
+            }
+            div.demo-node-link i {
+                position: absolute;
+                top: 28%;
+            }
+        </style>
+    </head>
+    <body>
+        <section class="header">
+            <h1>Local Webhooks</h1>
+            <p>Respond to webhook requests from your local machine</p>
+        </section>
+
+        <section class="demo">
+            <div id="demo-browser">
+                <div class="demo-frame">
+                    <div class="demo-frame-navbar">
+                        <p class="title">Your local app (localhost)</p>
+                    </div>
+                    <div class="demo-frame-content">
+                        <pre><code class="language-js">{ "foo": "bar" }</code></pre>
+                    </div>
+                </div>
+                <div class="demo-info">
+                    <code class="language-bash">$ lw-client</code>
+                </div>
+            </div>
+            <div class="demo-node-link">
+                <i class="fa-solid fa-arrows-left-right"></i>
+            </div>
+            <div id="demo-cloud">
+                <div class="demo-node">
+                    <i class="fa-solid fa-cloud"></i>
+                    <p>lw.gocho.live</p>
+                </div>
+                <div class="demo-info">
+                    <code class="language-bash">$ lw-server</code>
+                </div>
+            </div>
+            <div class="demo-node-link">
+                <i class="fa-solid fa-arrows-left-right"></i>
+            </div>
+            <div id="demo-server">
+                <div class="demo-node">
+                    <i class="fa-solid fa-server"></i>
+                    <p class="title">AcmeCorp server</p>
+                </div>
+                <div class="demo-info">
+                    <p>Sends out requests to configured webhooks</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <h2>Installation</h2>
+            <p>Using npm:</p>
+            <pre><code class="language-bash">$ npm install local-webhooks --global</code></pre>
+            <p>You should now have program <code class="language-bash">lw-client</code> available.</p>
+        </section>
+
+        <section class="content">
+            <h2>Configuration</h2>
+            <p>You need to provide some configurations to the <code class="language-bash">lw-client</code> program.</p>
+            <pre><code class="language-js">{
+    // URL of the lw-server instance.
+    // Optional. Defaults to `https://lw.gocho.live/ws`.
+    "remoteUrl": "http://my.domain.com/ws",
+
+    // Your local apps, that you may be
+    // working on or have simply hosted locally.
+    // This is where you specify where the webhook
+    // requests will eventually end up.
+    "localApps": [
+        {
+            // Use a unique secret to identify this app.
+            // This should be kept safe (but can be seen by
+            // the server sending the webhook requests).
+            "appSecret": "super_secret",
+
+            // Where is your local app hosted?
+            "url": "http://localhost:8081"
+        }
+    ]
+}</code></pre>
+        </section>
+
+        <section class="content">
+            <h2>Usage</h2>
+            <p>
+                In your local machine, start the client.
+            </p>
+            <pre><code class="language-bash">$ lw-client ./my-config.json</code></pre>
+            <p>
+                A webhook URL is shown for each local app. You can configure this URL
+                in the server sending the webhook requests.
+            </p>
+            <p>
+                As long as the client is running, new webhook requests will be
+                forwarded to your local apps.
+            </p>
+        </section>
+
+        <section class="content footer">
+            <p><a href="https://github.com/gochomugo/local-webhooks">Project</a> by <a href="https://mugo.gocho.live">gochomugo</a></p>
+        </section>
+
+        <script src="https://unpkg.com/prismjs@1.29.0/prism.js"></script>
+    </body>
+</html>

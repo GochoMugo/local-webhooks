@@ -1,10 +1,14 @@
 const http = require("http");
+const path = require("path")
 
 const wserver = require("@forfuture/wserver");
 const bodyParser = require("body-parser");
 const express = require("express");
 
 const app = express();
+const paths = {
+  homepage: path.resolve(__dirname, "../../www/index.html"),
+};
 const server = http.Server(app);
 const websocketServer = new wserver.Server(server, {
   authenticateSocket(req) {
@@ -63,6 +67,10 @@ function endResponse(websocketRequest) {
     .set(headers)
     .send(body);
 }
+
+app.get("/", function(req, res) {
+  return res.sendFile(paths.homepage);
+});
 
 app.post("/ping", bodyParser.json(), function(req, res) {
   return res.status(201).json({ pong: true });
