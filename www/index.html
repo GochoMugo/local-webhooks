@@ -52,6 +52,14 @@
                 padding: 20px 0;
                 text-align: center;
             }
+            section.footer ol {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+            section.footer li {
+                display: inline-block;
+            }
 
             /* Demo. */
             section.demo {
@@ -221,7 +229,12 @@
         </section>
 
         <section class="content footer">
-            <p><a href="https://github.com/gochomugo/local-webhooks">Project</a> by <a href="https://mugo.gocho.live">gochomugo</a></p>
+            <ol>
+                <li><a href="https://github.com/gochomugo/local-webhooks">GitHub</a></li>
+                <li>&middot;</li>
+                <li><a href="https://gitlab.com/gochomugo/local-webhooks">GitLab</a></li>
+            </ol>
+            <p>Project by <a href="https://mugo.gocho.live">gochomugo</a></p>
         </section>
 
         <script src="https://unpkg.com/prismjs@1.29.0/prism.js"></script>
