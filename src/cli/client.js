@@ -13,12 +13,12 @@ const config = require(path.resolve(configFilepath));
 const remoteUrl = config.remoteUrl || "https://lw.gocho.live/ws";
 const localApps = config.localApps || [];
 const websocket = new wserver.Client(
-  `${remoteUrl}?appSecrets=${localApps.map((a) => a.appSecret).join(",")}`
+  `${remoteUrl}?appSecrets=${localApps.map((a) => a.secret).join(",")}`
 );
 
 websocket.on("request", function(websocketNotification) {
   const localApp = localApps.find(
-    (a) => a.appSecret === websocketNotification.appSecret
+    (a) => a.secret === websocketNotification.appSecret
   );
   if (!localApp) {
     return;
