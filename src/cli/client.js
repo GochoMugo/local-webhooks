@@ -16,6 +16,7 @@ const localApps = config.localApps || [];
 const websocket = new wserver.Client(
   `${remoteUrl}?appSecrets=${localApps.map((a) => a.secret).join(",")}`
 );
+let requestIndex = 0;
 
 websocket.on("request", function(websocketNotification) {
   const localApp = localApps.find(
@@ -25,7 +26,12 @@ websocket.on("request", function(websocketNotification) {
     return;
   }
 
+  const { notificationId } = websocketNotification;
   const onError = (error) => console.error(error);
+
+  const name = chalk.green(localApp.name);
+  const timestamp = new Date().toISOString();
+  console.log(`${++requestIndex}. ${timestamp} [${notificationId}] ${name}`);
 
   const appRequest = http.request(
     localApp.url,
@@ -45,7 +51,7 @@ websocket.on("request", function(websocketNotification) {
       res.on("end", () => {
         websocket
           .request("response", {
-            notificationId: websocketNotification.notificationId,
+            notificationId,
             webhookPayload: {
               body: chunks.join(""),
               headers: res.headers,
