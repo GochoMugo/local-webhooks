@@ -235,8 +235,22 @@
                 <li><a href="https://gitlab.com/gochomugo/local-webhooks">GitLab</a></li>
             </ol>
             <p>Project by <a href="https://mugo.gocho.live">gochomugo</a></p>
+            <p id="version"></p>
         </section>
 
         <script src="https://unpkg.com/prismjs@1.29.0/prism.js"></script>
+        <script type="text/javascript">
+            if (fetch) {
+                (async function() {
+                    try {
+                        const res = await fetch("/version");
+                        const { version } = await res.json();
+                        document.getElementById("version").innerText = "v" + version
+                    } catch (error) {
+                        console.warn("Something went wrong when fetching app version. Sorry, we'll get 'em next time!");
+                    }
+                })();
+            }
+        </script>
     </body>
 </html>

@@ -9,6 +9,7 @@ const app = express();
 const paths = {
   homepage: path.resolve(__dirname, "../../www/index.html"),
 };
+const pkg = require("../../package.json");
 const server = http.Server(app);
 const websocketServer = new wserver.Server(server, {
   authenticateSocket(req) {
@@ -70,6 +71,10 @@ function endResponse(websocketRequest) {
 
 app.get("/", function(req, res) {
   return res.sendFile(paths.homepage);
+});
+
+app.get("/version", function (req, res) {
+  return res.json({ version: pkg.version });
 });
 
 app.post("/ping", bodyParser.json(), function(req, res) {
