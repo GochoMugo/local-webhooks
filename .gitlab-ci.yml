@@ -26,7 +26,7 @@ publish:image:
   services:
     - docker:dind
   script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u $DOCKER_CI_REGISTRY_USER -p $DOCKER_CI_REGISTRY_PASSWORD
     - chmod +x docker-instructions.txt
     - ./docker-instructions.txt
   # rules:
