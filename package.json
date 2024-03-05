@@ -2,7 +2,8 @@
   "name": "@gochomugo/local-webhooks",
   "version": "0.0.0",
   "scripts": {
-    "image": "docker build --tag ${npm_package_config_docker_tag}:${npm_package_version} --build-arg=SSH_PRIVATE_KEY=\"${SSH_PRIVATE_KEY}\" .",
+    "image": "docker build --tag ${npm_package_config_docker_tag}:${npm_package_version} .",
+    "push-image": "docker push ${npm_package_config_docker_tag}:${npm_package_version}",
     "start": "bin/lw-server"
   },
   "bin": {
@@ -10,9 +11,9 @@
     "lw-server": "bin/lw-server"
   },
   "dependencies": {
-    "@forfuture/wserver": "gitlab:forfuture/wserver#master",
-    "body-parser": "^1.19.0",
-    "express": "^4.17.1"
+    "@forfuture/wserver": "^0.2.0",
+    "body-parser": "^1.20.2",
+    "express": "^4.18.3"
   },
   "config": {
     "docker_tag": "gochomugo/local-webhooks"

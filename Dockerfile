@@ -1,19 +1,12 @@
-## Stage I: Configuring credentials and installing dependencies.
+## Stage I: Installing dependencies.
 
-FROM node:12 as StageA
-
-ARG SSH_PRIVATE_KEY
-RUN mkdir /root/.ssh && \
-    echo "${SSH_PRIVATE_KEY}" > /root/.ssh/id_rsa && \
-    chmod u=rw,go= /root/.ssh/id_rsa && \
-    ssh-keyscan gitlab.com >> /root/.ssh/known_hosts
+FROM node:18 as StageA
 
 ADD package.json package-lock.json /tmp/npm/
-RUN cd /tmp/npm/ && \
-    npm install
+RUN cd /tmp/npm/ && npm install
 
 # Stage II: Preparing for runtime execution.
-FROM node:12
+FROM node:18
 
 ARG NODE_ENV=production
 ARG COM=gocho.mugo
