@@ -2,6 +2,7 @@ const http = require("http");
 const path = require("path");
 
 const wserver = require("@forfuture/wserver");
+const chalk = require("chalk")
 
 const configFilepath = process.argv[2];
 if (!configFilepath) {
@@ -61,3 +62,14 @@ websocket.on("request", function(websocketNotification) {
 });
 
 websocket.on("error", console.error);
+
+websocket.on("open", function () {
+  const webhookUrl = `${remoteUrl.replace(/\/ws$/, "")}/webhook`;
+
+  console.log(`You are now connected to the Internet.\n\nHere are your webhook URLs:`)
+  localApps.forEach(function (app, index) {
+    const url = chalk.green(`https://${webhookUrl}/${app.secret}`);
+    console.log(`    ${index + 1}. ${app.name} ⇒\t${url}`)
+  });
+  console.log(`\nYour local apps are ready for POST webhook requests.\n`);
+});
