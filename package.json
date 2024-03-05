@@ -1,6 +1,14 @@
 {
-  "name": "@gochomugo/local-webhooks",
+  "name": "local-webhooks",
   "version": "0.0.0",
+  "homepage": "https://lw.gocho.live",
+  "keywords": [
+    "webhook",
+    "developer-tool",
+    "cli-tool"
+  ],
+  "license": "MIT",
+  "repository": "github:gochomugo/local-webhooks",
   "scripts": {
     "image": "docker build --tag ${npm_package_config_docker_tag}:${npm_package_version} .",
     "push-image": "docker push ${npm_package_config_docker_tag}:${npm_package_version}",
