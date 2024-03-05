@@ -1,0 +1,33 @@
+image: node:18
+
+stages:
+  - build
+  - publish
+
+cache:
+  paths:
+    - docker-instructions.txt
+    - node_modules/
+
+build:
+  stage: build
+  script:
+    - npm install
+    - cp _scripts/fake-docker /usr/bin/docker
+    - chmod +x /usr/bin/docker
+    - rm -f docker-instructions.txt
+    - npm run image
+    - npm run push-image
+    - rm /usr/bin/docker
+
+publish:image:
+  stage: publish
+  image: docker:20.10.16
+  services:
+    - docker:dind
+  script:
+    - docker login -u $DOCKER_CI_REGISTRY_USER -p $DOCKER_CI_REGISTRY_PASSWORD
+    - chmod +x docker-instructions.txt
+    - ./docker-instructions.txt
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^release/
