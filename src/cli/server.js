@@ -27,6 +27,10 @@ const websocketServer = new wserver.Server(server, {
 const webhookResponses = {};
 let websocketNotificationId = 0;
 
+app.get("/healthy", function (req, res) {
+  return res.json({ version: pkg.version });
+});
+
 app.post("/webhook/:appSecret", function(req, res) {
   const id = ++websocketNotificationId;
 
@@ -71,14 +75,6 @@ function endResponse(websocketRequest) {
 
 app.get("/", function(req, res) {
   return res.sendFile(paths.homepage);
-});
-
-app.get("/version", function (req, res) {
-  return res.json({ version: pkg.version });
-});
-
-app.post("/ping", bodyParser.json(), function(req, res) {
-  return res.status(201).json({ pong: true });
 });
 
 server.listen(

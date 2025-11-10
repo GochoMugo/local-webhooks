@@ -15,6 +15,7 @@ WORKDIR ${APP_DIR}
 
 EXPOSE ${HTTP_PORT}
 CMD ["npm", "start"]
+HEALTHCHECK CMD curl --fail http://localhost:${HTTP_PORT}/healthy || exit 1
 
 ADD package.json package-lock.json ${APP_DIR}
 RUN cd ${APP_DIR} && npm install
