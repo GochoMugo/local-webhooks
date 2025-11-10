@@ -1,5 +1,5 @@
 const http = require("http");
-const path = require("path")
+const path = require("path");
 
 const wserver = require("@forfuture/wserver");
 const bodyParser = require("body-parser");
@@ -7,77 +7,74 @@ const express = require("express");
 
 const app = express();
 const paths = {
-  homepage: path.resolve(__dirname, "../../www/index.html"),
+    homepage: path.resolve(__dirname, "../../www/index.html"),
 };
 const pkg = require("../../package.json");
 const server = http.Server(app);
 const websocketServer = new wserver.Server(server, {
-  authenticateSocket(req) {
-    const appSecrets = (req.query.appSecrets || "").split(",");
-    return { appSecrets };
-  },
-  handleRequest(req) {
-    switch (req.action) {
-      case "response":
-        endResponse(req);
-        return { ok: true };
-    }
-  }
+    authenticateSocket(req) {
+        const appSecrets = (req.query.appSecrets || "").split(",");
+        return { appSecrets };
+    },
+    handleRequest(req) {
+        switch (req.action) {
+            case "response":
+                endResponse(req);
+                return { ok: true };
+        }
+    },
 });
 const webhookResponses = {};
 let websocketNotificationId = 0;
 
 app.get("/healthy", function (req, res) {
-  return res.json({ version: pkg.version });
+    return res.json({ version: pkg.version });
 });
 
-app.post("/webhook/:appSecret", function(req, res) {
-  const id = ++websocketNotificationId;
+app.post("/webhook/:appSecret", function (req, res) {
+    const id = ++websocketNotificationId;
 
-  const chunks = [];
-  req.on("data", (d) => chunks.push(d));
+    const chunks = [];
+    req.on("data", (d) => chunks.push(d));
 
-  req.on("end", function() {
-    webhookResponses[id] = res;
+    req.on("end", function () {
+        webhookResponses[id] = res;
 
-    const sockets = websocketServer.sockets.filter((socket) =>
-      socket.profile.appSecrets.includes(req.params.appSecret)
-    );
-    Promise.all(
-      sockets.map((socket) =>
-        socket.notify("request", {
-          notificationId: id,
-          appSecret: req.params.appSecret,
-          webhookPayload: {
-            body: chunks.join(""),
-            headers: req.headers
-          }
-        })
-      )
-    );
-  });
+        const sockets = websocketServer.sockets.filter((socket) =>
+            socket.profile.appSecrets.includes(req.params.appSecret),
+        );
+        Promise.all(
+            sockets.map((socket) =>
+                socket.notify("request", {
+                    notificationId: id,
+                    appSecret: req.params.appSecret,
+                    webhookPayload: {
+                        body: chunks.join(""),
+                        headers: req.headers,
+                    },
+                }),
+            ),
+        );
+    });
 });
 
 function endResponse(websocketRequest) {
-  const response = webhookResponses[websocketRequest.args.notificationId];
-  if (!response) {
-    return;
-  }
-  delete webhookResponses[websocketRequest.args.notificationId];
+    const response = webhookResponses[websocketRequest.args.notificationId];
+    if (!response) {
+        return;
+    }
+    delete webhookResponses[websocketRequest.args.notificationId];
 
-  const { body, headers, statusCode } = websocketRequest.args.webhookPayload;
+    const { body, headers, statusCode } = websocketRequest.args.webhookPayload;
 
-  response
-    .status(statusCode)
-    .set(headers)
-    .send(body);
+    response.status(statusCode).set(headers).send(body);
 }
 
-app.get("/", function(req, res) {
-  return res.sendFile(paths.homepage);
+app.get("/", function (req, res) {
+    return res.sendFile(paths.homepage);
 });
 
 server.listen(
-  parseInt(process.env.HTTP_PORT || 8080, 10),
-  process.env.HTTP_HOST || "0.0.0.0"
+    parseInt(process.env.HTTP_PORT || 8080, 10),
+    process.env.HTTP_HOST || "0.0.0.0",
 );

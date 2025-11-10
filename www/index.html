@@ -1,19 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
     <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Local Webhooks</title>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Oswald:wght@200..700&display=swap">
-        <link rel="stylesheet" href="https://unpkg.com/animate.css@4.1.1/animate.min.css" >
-        <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/fontawesome.min.css" >
-        <link rel="stylesheet" href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/solid.min.css" >
-        <link rel="stylesheet" href="https://unpkg.com/prismjs@1.29.0/themes/prism-solarizedlight.min.css" >
+        <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Cardo:ital,wght@0,400;0,700;1,400&family=Oswald:wght@200..700&display=swap"
+        />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/animate.css@4.1.1/animate.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/fontawesome.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/solid.min.css"
+        />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/prismjs@1.29.0/themes/prism-solarizedlight.min.css"
+        />
         <style>
             /* Presets. */
             body {
                 margin: 0;
             }
-            body, p {
+            body,
+            p {
                 font-family: Cardo, sans-serif;
             }
 
@@ -39,7 +55,7 @@
                 margin-bottom: 80px;
                 width: 60%;
             }
-            @media (max-device-width : 480px) {
+            @media (max-device-width: 480px) {
                 section.content {
                     margin-left: 5%;
                     width: 90%;
@@ -67,7 +83,7 @@
                 justify-content: space-around;
                 padding: 5em;
             }
-            @media (max-device-width : 480px) {
+            @media (max-device-width: 480px) {
                 section.demo {
                     display: none;
                 }
@@ -119,7 +135,7 @@
                 font-size: 2em;
                 position: relative;
             }
-            @media (max-device-width : 1000px) {
+            @media (max-device-width: 1000px) {
                 div.demo-node-link {
                     display: none;
                 }
@@ -180,12 +196,18 @@
             <h2>Installation</h2>
             <p>Using npm:</p>
             <pre><code class="language-bash">$ npm install local-webhooks --global</code></pre>
-            <p>You should now have program <code class="language-bash">lw-client</code> available.</p>
+            <p>
+                You should now have program
+                <code class="language-bash">lw-client</code> available.
+            </p>
         </section>
 
         <section class="content">
             <h2>Configuration</h2>
-            <p>You need to provide some configurations to the <code class="language-bash">lw-client</code> program.</p>
+            <p>
+                You need to provide some configurations to the
+                <code class="language-bash">lw-client</code> program.
+            </p>
             <pre><code class="language-js">{
     // URL of the lw-server instance.
     // Optional. Defaults to `https://lw.gocho.live/ws`.
@@ -214,13 +236,11 @@
 
         <section class="content">
             <h2>Usage</h2>
-            <p>
-                In your local machine, start the client.
-            </p>
+            <p>In your local machine, start the client.</p>
             <pre><code class="language-bash">$ lw-client ./my-config.json</code></pre>
             <p>
-                A webhook URL is shown for each local app. You can configure this URL
-                in the server sending the webhook requests.
+                A webhook URL is shown for each local app. You can configure
+                this URL in the server sending the webhook requests.
             </p>
             <p>
                 As long as the client is running, new webhook requests will be
@@ -230,9 +250,17 @@
 
         <section class="content footer">
             <ol>
-                <li><a href="https://github.com/gochomugo/local-webhooks">GitHub</a></li>
+                <li>
+                    <a href="https://github.com/gochomugo/local-webhooks"
+                        >GitHub</a
+                    >
+                </li>
                 <li>&middot;</li>
-                <li><a href="https://gitlab.com/gochomugo/local-webhooks">GitLab</a></li>
+                <li>
+                    <a href="https://gitlab.com/gochomugo/local-webhooks"
+                        >GitLab</a
+                    >
+                </li>
             </ol>
             <p>Project by <a href="https://mugo.gocho.live">gochomugo</a></p>
             <p id="version"></p>
@@ -241,13 +269,16 @@
         <script src="https://unpkg.com/prismjs@1.29.0/prism.js"></script>
         <script type="text/javascript">
             if (fetch) {
-                (async function() {
+                (async function () {
                     try {
                         const res = await fetch("/version");
                         const { version } = await res.json();
-                        document.getElementById("version").innerText = "v" + version
+                        document.getElementById("version").innerText =
+                            "v" + version;
                     } catch (error) {
-                        console.warn("Something went wrong when fetching app version. Sorry, we'll get 'em next time!");
+                        console.warn(
+                            "Something went wrong when fetching app version. Sorry, we'll get 'em next time!",
+                        );
                     }
                 })();
             }
