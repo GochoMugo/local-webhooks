@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-if [ ! -f docker-instructions.txt ] ; then
-    echo '#!/bin/sh' > docker-instructions.txt
-fi
-echo docker ${*} >> docker-instructions.txt
