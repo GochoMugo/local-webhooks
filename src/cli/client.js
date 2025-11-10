@@ -74,7 +74,7 @@ websocket.on("open", function () {
 
   console.log(`You are now connected to the Internet.\n\nHere are your webhook URLs:`)
   localApps.forEach(function (app, index) {
-    const url = chalk.green(`https://${webhookUrl}/${app.secret}`);
+    const url = chalk.green(`${webhookUrl}/${app.secret}`);
     console.log(`    ${index + 1}. ${app.name} ⇒\t${url}`)
   });
   console.log(`\nYour local apps are ready for POST webhook requests.\n`);
