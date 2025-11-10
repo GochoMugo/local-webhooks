@@ -15,7 +15,7 @@ if (!configFilepath) {
 const config = Object.assign(
     {
         localApps: [],
-        remoteUrl: "https://lw.gocho.live/ws",
+        remoteUrl: "https://lw.gocho.live",
     },
     require(path.resolve(configFilepath)),
 );
