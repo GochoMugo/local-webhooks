@@ -1,26 +1,22 @@
-## Stage I: Installing dependencies.
-
-FROM node:18 as StageA
-
-ADD package.json package-lock.json /tmp/npm/
-RUN cd /tmp/npm/ && npm install
-
-# Stage II: Preparing for runtime execution.
 FROM node:18
 
 ARG NODE_ENV=production
-ARG COM=gocho.mugo
+ARG COM=gochomugo
 ARG APP=local-webhooks
 
-ENV APP_DIR /opt/${COM}/${APP}
+ENV APP_DIR=/opt/${COM}/${APP}
+ENV HTTP_PORT=8080
+ENV NODE_ENV=${NODE_ENV}
 
 RUN mkdir -p ${APP_DIR}/data && \
     chown node:node ${APP_DIR}/data/
 VOLUME ${APP_DIR}/data/
 WORKDIR ${APP_DIR}
 
-EXPOSE 8080
+EXPOSE ${HTTP_PORT}
 CMD ["npm", "start"]
 
-COPY --from=stageA /tmp/npm/node_modules ${APP_DIR}/node_modules/
+ADD package.json package-lock.json ${APP_DIR}
+RUN cd ${APP_DIR} && npm install
+
 ADD . ${APP_DIR}/
