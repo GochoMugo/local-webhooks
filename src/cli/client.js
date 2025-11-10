@@ -2,52 +2,83 @@ const http = require("http");
 const path = require("path");
 
 const wserver = require("@forfuture/wserver");
-const chalk = require("chalk");
+const chalk = require("chalk").default;
 
-const configFilepath = process.argv[2];
+// Get path to the configuration file.
+const configFilepath = process.argv[2] || path.join(process.cwd(), "./lw.json");
 if (!configFilepath) {
     console.error("usage: lw-client <path/to/config>");
     process.exit(1);
 }
 
-const config = require(path.resolve(configFilepath));
-const remoteUrl = config.remoteUrl || "https://lw.gocho.live/ws";
-const localApps = config.localApps || [];
-const websocket = new wserver.Client(
-    `${remoteUrl}?appSecrets=${localApps.map((a) => a.secret).join(",")}`,
+// Constants.
+const config = Object.assign(
+    {
+        localApps: [],
+        remoteUrl: "https://lw.gocho.live/ws",
+    },
+    require(path.resolve(configFilepath)),
 );
+const webhookUrl = `${config.remoteUrl}/webhook`;
+const websocketUrl = `${config.remoteUrl}/ws`;
+
+// Request index; used for display purposes only.
 let requestIndex = 0;
 
-websocket.on("request", function (websocketNotification) {
-    const localApp = localApps.find(
-        (a) => a.secret === websocketNotification.appSecret,
+// Open websocket client.
+const websocket = new wserver.Client(
+    `${websocketUrl}?appSecrets=${config.localApps.map((a) => a.secret).join(",")}`,
+);
+const onError = (error) => console.error(error);
+
+// Websocket errors.
+websocket.on("error", onError);
+
+// When websocket has opened.
+websocket.on("open", function () {
+    console.log(
+        `\n\nYou are now connected to the Internet.\n\nHere are your webhook URLs:`,
     );
+    config.localApps.forEach(function (app, index) {
+        const url = chalk.green(`${webhookUrl}/${app.secret}`);
+        console.log(`    ${index + 1}. ${app.name} ⇒\t${url}`);
+    });
+    console.log(`\nYour local apps are ready for webhook requests.\n`);
+});
+
+// Listen for webhook requests.
+websocket.on("request", function (websocketNotification) {
+    const { appSecret, notificationId, webhookPayload } = websocketNotification;
+
+    // Find the local app. If not found, ignore notification.
+    const localApp = config.localApps.find((a) => a.secret === appSecret);
     if (!localApp) {
         return;
     }
 
-    const { notificationId } = websocketNotification;
-    const onError = (error) => console.error(error);
-
+    // Log request to notification.
     const name = chalk.green(localApp.name);
     const timestamp = new Date().toISOString();
-    console.log(`${++requestIndex}. ${timestamp} [${notificationId}] ${name}`);
+    console.log(`${++requestIndex}. ${timestamp} [#${notificationId}] ${name}`);
 
     const appRequest = http.request(
         localApp.url,
         {
-            headers: websocketNotification.webhookPayload.headers,
-            method: "POST",
+            headers: webhookPayload.headers,
+            method: webhookPayload.method || "POST",
         },
         function (res) {
             res.on("error", onError);
 
+            // Collect data from local app.
             const chunks = [];
             res.setEncoding("utf8");
             res.on("data", (chunk) => {
                 chunks.push(chunk);
             });
 
+            // Once complete data is received from local app,
+            // send response to websocket server.
             res.on("end", () => {
                 websocket
                     .request("response", {
@@ -62,22 +93,23 @@ websocket.on("request", function (websocketNotification) {
             });
         },
     );
-    appRequest.on("error", onError);
-    appRequest.write(websocketNotification.webhookPayload.body);
-    appRequest.end();
-});
 
-websocket.on("error", console.error);
-
-websocket.on("open", function () {
-    const webhookUrl = `${remoteUrl.replace(/\/ws$/, "")}/webhook`;
-
-    console.log(
-        `You are now connected to the Internet.\n\nHere are your webhook URLs:`,
-    );
-    localApps.forEach(function (app, index) {
-        const url = chalk.green(`${webhookUrl}/${app.secret}`);
-        console.log(`    ${index + 1}. ${app.name} ⇒\t${url}`);
+    // If sending request returned an error, send
+    // an error response to websocket server.
+    appRequest.on("error", (error) => {
+        console.error("Request error:", error);
+        websocket
+            .request("response", {
+                notificationId,
+                webhookPayload: {
+                    body: error.message,
+                    statusCode: 500,
+                },
+            })
+            .catch(onError);
     });
-    console.log(`\nYour local apps are ready for POST webhook requests.\n`);
+
+    // Send webhook request data to local app.
+    appRequest.write(webhookPayload.body);
+    appRequest.end();
 });

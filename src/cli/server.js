@@ -2,14 +2,16 @@ const http = require("http");
 const path = require("path");
 
 const wserver = require("@forfuture/wserver");
-const bodyParser = require("body-parser");
 const express = require("express");
 
-const app = express();
+// Constants.
 const paths = {
     homepage: path.resolve(__dirname, "../../www/index.html"),
 };
 const pkg = require("../../package.json");
+
+// Server instance.
+const app = express();
 const server = http.Server(app);
 const websocketServer = new wserver.Server(server, {
     authenticateSocket(req) {
@@ -19,62 +21,92 @@ const websocketServer = new wserver.Server(server, {
     handleRequest(req) {
         switch (req.action) {
             case "response":
-                endResponse(req);
+                endWebhookResponse(req);
                 return { ok: true };
         }
     },
 });
+
+// Response objects for webhooks.
 const webhookResponses = {};
+
+// Latest notification ID for forwarding webhook request.
 let websocketNotificationId = 0;
 
+// Health endpoint.
+// It's used in the container and the webpage.
 app.get("/healthy", function (req, res) {
+    console.log("[*] Healthcheck");
     return res.json({ version: pkg.version });
 });
 
-app.post("/webhook/:appSecret", function (req, res) {
-    const id = ++websocketNotificationId;
-
+// Submitting webhook requests.
+app.all("/webhook/:appSecret", function (req, res) {
+    console.log(`[*] New webhook request`);
     const chunks = [];
+
+    // Collect request's data.
     req.on("data", (d) => chunks.push(d));
 
+    // Once request data is complete, send notification via websocket.
     req.on("end", function () {
-        webhookResponses[id] = res;
+        const notificationId = ++websocketNotificationId;
 
-        const sockets = websocketServer.sockets.filter((socket) =>
-            socket.profile.appSecrets.includes(req.params.appSecret),
-        );
-        Promise.all(
-            sockets.map((socket) =>
-                socket.notify("request", {
-                    notificationId: id,
-                    appSecret: req.params.appSecret,
-                    webhookPayload: {
-                        body: chunks.join(""),
-                        headers: req.headers,
-                    },
-                }),
-            ),
-        );
+        // Cache the response object.
+        webhookResponses[notificationId] = res;
+
+        // Send notification to sockets that provided this app secret.
+        websocketServer.sockets
+            .filter((socket) =>
+                socket.profile.appSecrets.includes(req.params.appSecret),
+            )
+            .forEach((socket) =>
+                socket
+                    .notify("request", {
+                        appSecret: req.params.appSecret,
+                        notificationId,
+                        webhookPayload: {
+                            body: chunks.join(""),
+                            headers: req.headers,
+                            method: req.method,
+                            query: req.query,
+                        },
+                    })
+                    .catch(console.error),
+            );
     });
 });
 
-function endResponse(websocketRequest) {
-    const response = webhookResponses[websocketRequest.args.notificationId];
+// Finalize the webhook request with data from websocket.
+function endWebhookResponse(websocketRequest) {
+    const { notificationId, webhookPayload } = websocketRequest.args;
+    console.log(`[*] Finalizing webhook request #${notificationId}`);
+
+    // Find cached response object. If not found, ignore request.
+    const response = webhookResponses[notificationId];
     if (!response) {
         return;
     }
-    delete webhookResponses[websocketRequest.args.notificationId];
 
-    const { body, headers, statusCode } = websocketRequest.args.webhookPayload;
+    // Remove response object from cache.
+    delete webhookResponses[notificationId];
 
-    response.status(statusCode).set(headers).send(body);
+    // Send back response to original webhook request.
+    return response
+        .status(webhookPayload.statusCode)
+        .set(webhookPayload.headers)
+        .send(webhookPayload.body);
 }
 
+// Homepage.
 app.get("/", function (req, res) {
+    console.log("[*] Serving homepage");
     return res.sendFile(paths.homepage);
 });
 
+// Start server.
 server.listen(
     parseInt(process.env.HTTP_PORT || 8080, 10),
     process.env.HTTP_HOST || "0.0.0.0",
+    () => console.log("[*] Server ready"),
 );

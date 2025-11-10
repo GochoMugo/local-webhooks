@@ -13,15 +13,15 @@
         />
         <link
             rel="stylesheet"
-            href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/fontawesome.min.css"
+            href="https://unpkg.com/@fortawesome/fontawesome-free@7.1.0/css/fontawesome.min.css"
         />
         <link
             rel="stylesheet"
-            href="https://unpkg.com/@fortawesome/fontawesome-free@6.5.1/css/solid.min.css"
+            href="https://unpkg.com/@fortawesome/fontawesome-free@7.1.0/css/solid.min.css"
         />
         <link
             rel="stylesheet"
-            href="https://unpkg.com/prismjs@1.29.0/themes/prism-solarizedlight.min.css"
+            href="https://unpkg.com/prismjs@1.30.0/themes/prism-solarizedlight.min.css"
         />
         <style>
             /* Presets. */
@@ -255,23 +255,17 @@
                         >GitHub</a
                     >
                 </li>
-                <li>&middot;</li>
-                <li>
-                    <a href="https://gitlab.com/gochomugo/local-webhooks"
-                        >GitLab</a
-                    >
-                </li>
             </ol>
             <p>Project by <a href="https://mugo.gocho.live">gochomugo</a></p>
             <p id="version"></p>
         </section>
 
-        <script src="https://unpkg.com/prismjs@1.29.0/prism.js"></script>
+        <script src="https://unpkg.com/prismjs@1.30.0/prism.js"></script>
         <script type="text/javascript">
             if (fetch) {
                 (async function () {
                     try {
-                        const res = await fetch("/version");
+                        const res = await fetch("/healthy");
                         const { version } = await res.json();
                         document.getElementById("version").innerText =
                             "v" + version;

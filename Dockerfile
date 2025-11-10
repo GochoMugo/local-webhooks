@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:22
 
 ARG NODE_ENV=production
 ARG COM=gochomugo
