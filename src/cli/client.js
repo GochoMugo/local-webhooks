@@ -120,6 +120,8 @@ websocket.on("request", function (websocketNotification) {
     });
 
     // Send webhook request data to local app.
-    appRequest.write(webhookPayload.body);
+    if (webhookPayload.body) {
+        appRequest.write(webhookPayload.body);
+    }
     appRequest.end();
 });
