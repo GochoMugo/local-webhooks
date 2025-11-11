@@ -61,8 +61,18 @@ websocket.on("request", function (websocketNotification) {
     const timestamp = new Date().toISOString();
     console.log(`${++requestIndex}. ${timestamp} [#${notificationId}] ${name}`);
 
+    let qs = "";
+    const queryKeys = webhookPayload.query && Object.keys(webhookPayload.query);
+    if (queryKeys?.length) {
+        qs =
+            "?" +
+            queryKeys
+                .map((key) => `${key}=${webhookPayload.query[key]}`)
+                .join("&");
+    }
+
     const appRequest = http.request(
-        localApp.url,
+        `${localApp.url}${qs}`,
         {
             headers: webhookPayload.headers,
             method: webhookPayload.method || "POST",
