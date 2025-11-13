@@ -14,8 +14,9 @@
         "image": "docker build --tag ${npm_package_config_docker_tag}:${npm_package_version} .",
         "push-image": "docker push ${npm_package_config_docker_tag}:${npm_package_version}",
         "start": "bin/lw-server",
-        "test": "npm run test:format",
-        "test:format": "prettier --check '{src,www,.github}/**/*.{html,js,yml}' './*.{json,md,yml}'"
+        "test": "npm run test:format && npm run test:lint",
+        "test:format": "prettier --check '{src,www,.github}/**/*.{html,js,yml}' './*.{json,md,yml}'",
+        "test:lint": "eslint src/"
     },
     "bin": {
         "lw-client": "bin/lw-client",
@@ -29,6 +30,7 @@
         "pg-format": "^1.0.4"
     },
     "devDependencies": {
+        "eslint": "^9.39.1",
         "prettier": "^3.6.2"
     },
     "config": {
