@@ -1,0 +1,11 @@
+services:
+    postgres:
+        container_name: postgres
+        environment:
+            - PGDATABASE=test
+            - PGUSER=postgres
+            - POSTGRES_DB=test
+            - POSTGRES_PASSWORD=password
+        image: postgres:17.6-alpine
+        ports:
+            - 127.0.0.1:5432:5432

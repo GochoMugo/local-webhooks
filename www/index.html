@@ -48,6 +48,10 @@
             section.header p {
                 font-size: 1.3em;
             }
+            #count {
+                color: gray;
+                font-size: 1em;
+            }
 
             /* Content section. */
             section.content {
@@ -145,6 +149,7 @@
         <section class="header">
             <h1>Local Webhooks</h1>
             <p>Respond to webhook requests from your local machine</p>
+            <p id="count"></p>
         </section>
 
         <section class="demo">
@@ -261,7 +266,10 @@
                 (async function () {
                     try {
                         const res = await fetch("/healthy");
-                        const { version } = await res.json();
+                        const { count, version } = await res.json();
+                        document.getElementById("count").innerText =
+                            count.toLocaleString() +
+                            " webhook requests forwarded";
                         document.getElementById("version").innerText =
                             "v" + version;
                     } catch (error) {

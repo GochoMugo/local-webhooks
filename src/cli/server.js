@@ -3,12 +3,23 @@ const path = require("path");
 
 const wserver = require("@forfuture/wserver");
 const express = require("express");
+const pg = require("pg");
+const pgFormat = require("pg-format");
 
 // Constants.
 const paths = {
     homepage: path.resolve(__dirname, "../../www/index.html"),
 };
 const pkg = require("../../package.json");
+
+// Database connection.
+const db = new pg.Client({
+    database: process.env.PGDATABASE || "test",
+    host: process.env.PGHOST || "localhost",
+    password: process.env.PGPASSWORD || "password",
+    port: parseInt(process.env.PGPORT, 10) || 5432,
+    user: process.env.PGUSER || "postgres",
+});
 
 // Server instance.
 const app = express();
@@ -37,12 +48,13 @@ let websocketNotificationId = 0;
 // It's used in the container and the webpage.
 app.get("/healthy", function (req, res) {
     console.log("[*] Healthcheck");
-    return res.json({ version: pkg.version });
+    return res.json({ count: websocketNotificationId, version: pkg.version });
 });
 
 // Submitting webhook requests.
 app.all("/webhook/:appSecret", function (req, res) {
     console.log(`[*] New webhook request`);
+    incrementRequestCount("webhook");
     const chunks = [];
 
     // Collect request's data.
@@ -101,12 +113,74 @@ function endWebhookResponse(websocketRequest) {
 // Homepage.
 app.get("/", function (req, res) {
     console.log("[*] Serving homepage");
+    incrementRequestCount("homepage");
     return res.sendFile(paths.homepage);
 });
 
-// Start server.
-server.listen(
-    parseInt(process.env.HTTP_PORT || 8080, 10),
-    process.env.HTTP_HOST || "0.0.0.0",
-    () => console.log("[*] Server ready"),
-);
+async function main() {
+    // Init database.
+    try {
+        await db.connect();
+        await db.query(`
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM pg_type WHERE typname = 'request_type'
+            ) THEN
+                CREATE TYPE request_type AS ENUM ('homepage', 'webhook');
+            END IF;
+
+            CREATE SEQUENCE IF NOT EXISTS homepage_request_count;
+            CREATE SEQUENCE IF NOT EXISTS webhook_request_count;
+
+            CREATE TABLE IF NOT EXISTS requests (
+                count BIGINT NOT NULL,
+                type request_type PRIMARY KEY
+            );
+        END$$;
+`);
+
+        // Restore state.
+        const result = await db
+            .query(`SELECT count FROM requests WHERE type = 'webhook'`)
+            .catch(console.error);
+        if (result?.rows.length) {
+            websocketNotificationId = result.rows[0].count;
+            console.log(
+                "[*] Restored notification ID:",
+                websocketNotificationId,
+            );
+        }
+    } catch (error) {
+        if (error.code !== "ECONNREFUSED") {
+            throw error;
+        }
+    }
+
+    // Start server.
+    server.listen(
+        parseInt(process.env.HTTP_PORT || 8080, 10),
+        process.env.HTTP_HOST || "0.0.0.0",
+        () => console.log("[*] Server ready"),
+    );
+}
+
+async function incrementRequestCount(type) {
+    const sequence_type = `${type}_request_count`;
+    await db
+        .query(
+            pgFormat(
+                `
+          INSERT INTO requests (count, type)
+              VALUES (NEXTVAL(%L), %L)
+              ON CONFLICT (type) DO UPDATE SET
+                  count = excluded.count;
+`,
+                sequence_type,
+                type,
+            ),
+        )
+        .catch(console.error);
+}
+
+main();
