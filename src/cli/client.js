@@ -17,8 +17,10 @@ program
         defaultConfigFilepath,
     )
     .usage("[options] <path/to/config>")
+    .option("-v, --verbose", "Log payload to stdout", false)
     .parse();
 const configFilepath = program.args[0] || defaultConfigFilepath;
+const opts = program.opts();
 
 // Load and validate configuration.
 const ajv = new Ajv();
@@ -89,6 +91,13 @@ websocket.on("request", function (websocketNotification) {
     const name = chalk.green(localApp.name);
     const timestamp = new Date().toISOString();
     console.log(`${++requestIndex}. ${timestamp} [#${notificationId}] ${name}`);
+    if (opts.verbose) {
+        console.log(
+            chalk.bgGray(
+                "webhook payload: " + JSON.stringify(webhookPayload, null, 2),
+            ),
+        );
+    }
 
     let qs = "";
     const queryKeys = webhookPayload.query && Object.keys(webhookPayload.query);
