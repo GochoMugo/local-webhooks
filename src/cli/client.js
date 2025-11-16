@@ -23,13 +23,21 @@ const configFilepath = program.args[0] || defaultConfigFilepath;
 // Load and validate configuration.
 const ajv = new Ajv();
 addAjvFormats(ajv);
-const config = Object.assign(
-    {
-        localApps: [],
-        remoteUrl: "https://lw.gocho.live",
-    },
-    require(path.resolve(configFilepath)),
-);
+let config;
+try {
+    config = Object.assign(
+        {
+            localApps: [],
+            remoteUrl: "https://lw.gocho.live",
+        },
+        require(path.resolve(configFilepath)),
+    );
+} catch (error) {
+    if (error.code === "MODULE_NOT_FOUND") {
+        throw new Error(`Configuration file not found: ${configFilepath}`);
+    }
+    throw error;
+}
 const isConfigValid = ajv.validate(
     require("../../schemas/config-schema.json"),
     config,
