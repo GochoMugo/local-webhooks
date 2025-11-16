@@ -10,12 +10,12 @@
     "license": "MIT",
     "repository": "github:gochomugo/local-webhooks",
     "scripts": {
-        "format": "prettier --write '{src,www,.github}/**/*.{html,js,yml}' './*.{json,md,yml}'",
+        "format": "prettier --write '{src,www,.github}/**/*.{html,js,yml}' '{schemas/**/,./}*.{json,md,yml}'",
         "image": "docker build --tag ${npm_package_config_docker_tag}:${npm_package_version} .",
         "push-image": "docker push ${npm_package_config_docker_tag}:${npm_package_version}",
         "start": "bin/lw-server",
         "test": "npm run test:format && npm run test:lint",
-        "test:format": "prettier --check '{src,www,.github}/**/*.{html,js,yml}' './*.{json,md,yml}'",
+        "test:format": "prettier --check '{src,www,.github}/**/*.{html,js,yml}' '{schemas/**/,./}*.{json,md,yml}'",
         "test:lint": "eslint src/"
     },
     "bin": {
@@ -24,6 +24,8 @@
     },
     "dependencies": {
         "@forfuture/wserver": "^0.3.2",
+        "ajv": "^8.17.1",
+        "ajv-formats": "^3.0.1",
         "chalk": "^5.6.2",
         "express": "^5.1.0",
         "pg": "^8.16.3",

@@ -1,0 +1,31 @@
+{
+    "type": "object",
+    "properties": {
+        "remoteUrl": {
+            "type": "string"
+        },
+        "localApps": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "secret": {
+                        "minLength": 1,
+                        "type": "string"
+                    },
+                    "url": {
+                        "format": "uri",
+                        "type": "string"
+                    }
+                },
+                "required": ["name", "secret", "url"],
+                "additionalProperties": false
+            }
+        }
+    },
+    "additionalProperties": false
+}

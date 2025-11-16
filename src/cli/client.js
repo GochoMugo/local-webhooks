@@ -2,6 +2,8 @@ const http = require("http");
 const path = require("path");
 
 const wserver = require("@forfuture/wserver");
+const Ajv = require("ajv");
+const addAjvFormats = require("ajv-formats");
 const chalk = require("chalk").default;
 
 // Get path to the configuration file.
@@ -11,7 +13,9 @@ if (!configFilepath) {
     process.exit(1);
 }
 
-// Constants.
+// Load and validate configuration.
+const ajv = new Ajv();
+addAjvFormats(ajv);
 const config = Object.assign(
     {
         localApps: [],
@@ -19,6 +23,16 @@ const config = Object.assign(
     },
     require(path.resolve(configFilepath)),
 );
+const isConfigValid = ajv.validate(
+    require("../../schemas/config-schema.json"),
+    config,
+);
+if (!isConfigValid) {
+    console.error(ajv.errors);
+    throw new Error("Invalid configuration");
+}
+
+// Constants.
 const webhookUrl = `${config.remoteUrl}/webhook`;
 const websocketUrl = `${config.remoteUrl}/ws`;
 
