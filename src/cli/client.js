@@ -5,13 +5,20 @@ const wserver = require("@forfuture/wserver");
 const Ajv = require("ajv");
 const addAjvFormats = require("ajv-formats");
 const chalk = require("chalk").default;
+const { program } = require("commander");
 
-// Get path to the configuration file.
-const configFilepath = process.argv[2] || path.join(process.cwd(), "./lw.json");
-if (!configFilepath) {
-    console.error("usage: lw-client <path/to/config>");
-    process.exit(1);
-}
+// CLI arguments parsing.
+const defaultConfigFilepath = path.join(process.cwd(), "./lw.json");
+program
+    .version(require("../../package.json").version)
+    .argument(
+        "[path/to/config]",
+        "Path to configuration file",
+        defaultConfigFilepath,
+    )
+    .usage("[options] <path/to/config>")
+    .parse();
+const configFilepath = program.args[0] || defaultConfigFilepath;
 
 // Load and validate configuration.
 const ajv = new Ajv();
