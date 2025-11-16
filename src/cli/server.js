@@ -54,7 +54,6 @@ app.get("/healthy", function (req, res) {
 // Submitting webhook requests.
 app.all("/webhook/:appSecret", function (req, res) {
     console.log(`[*] New webhook request`);
-    incrementRequestCount("webhook");
     const chunks = [];
 
     // Collect request's data.
@@ -99,6 +98,8 @@ function endWebhookResponse(websocketRequest) {
     if (!response) {
         return;
     }
+
+    incrementRequestCount("webhook");
 
     // Remove response object from cache.
     delete webhookResponses[notificationId];
