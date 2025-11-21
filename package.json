@@ -19,6 +19,7 @@
         "test:lint": "eslint src/"
     },
     "bin": {
+        "local-webhooks": "bin/lw-client",
         "lw-client": "bin/lw-client",
         "lw-server": "bin/lw-server"
     },
