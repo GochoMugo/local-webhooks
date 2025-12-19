@@ -8,6 +8,7 @@ const pgFormat = require("pg-format");
 
 // Constants.
 const paths = {
+    assets: path.resolve(__dirname, "../../www/assets"),
     homepage: path.resolve(__dirname, "../../www/index.html"),
 };
 const pkg = require("../../package.json");
@@ -117,6 +118,9 @@ app.get("/", function (req, res) {
     incrementRequestCount("homepage");
     return res.sendFile(paths.homepage);
 });
+
+// Assets
+app.use("/assets", express.static(paths.assets));
 
 async function main() {
     // Init database.
