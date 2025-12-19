@@ -90,7 +90,7 @@ websocket.on("request", function (websocketNotification) {
     // Log request to notification.
     const name = chalk.green(localApp.name);
     const timestamp = new Date().toISOString();
-    console.log(`${++requestIndex}. ${timestamp} [#${notificationId}] ${name}`);
+    console.log(`${++requestIndex}. ${timestamp} [${notificationId}] ${name}`);
     if (opts.verbose) {
         console.log(
             chalk.bgGray(

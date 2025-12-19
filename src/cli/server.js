@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const http = require("http");
 const path = require("path");
 
@@ -42,14 +43,17 @@ const websocketServer = new wserver.Server(server, {
 // Response objects for webhooks.
 const webhookResponses = {};
 
-// Latest notification ID for forwarding webhook request.
-let websocketNotificationId = 0;
+// Count of notifications for forwarding webhook request.
+let websocketNotificationCount = 0;
 
 // Health endpoint.
 // It's used in the container and the webpage.
 app.get("/healthy", function (req, res) {
     console.log("[*] Healthcheck");
-    return res.json({ count: websocketNotificationId, version: pkg.version });
+    return res.json({
+        count: websocketNotificationCount,
+        version: pkg.version,
+    });
 });
 
 // Submitting webhook requests.
@@ -62,7 +66,7 @@ app.all("/webhook/:appSecret", function (req, res) {
 
     // Once request data is complete, send notification via websocket.
     req.on("end", function () {
-        const notificationId = ++websocketNotificationId;
+        const notificationId = crypto.randomUUID();
 
         // Cache the response object.
         webhookResponses[notificationId] = res;
@@ -150,10 +154,10 @@ async function main() {
             .query(`SELECT count FROM requests WHERE type = 'webhook'`)
             .catch(console.error);
         if (result?.rows.length) {
-            websocketNotificationId = result.rows[0].count;
+            websocketNotificationCount = result.rows[0].count;
             console.log(
-                "[*] Restored notification ID:",
-                websocketNotificationId,
+                "[*] Restored notification count:",
+                websocketNotificationCount,
             );
         }
     } catch (error) {
@@ -186,6 +190,9 @@ async function incrementRequestCount(type) {
             ),
         )
         .catch(console.error);
+    if (type === "webhook") {
+        websocketNotificationCount++;
+    }
 }
 
 main();
