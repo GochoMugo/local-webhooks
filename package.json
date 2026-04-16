@@ -25,17 +25,17 @@
     },
     "dependencies": {
         "@forfuture/wserver": "^0.3.3",
-        "ajv": "^8.17.1",
+        "ajv": "^8.18.0",
         "ajv-formats": "^3.0.1",
         "chalk": "^5.6.2",
-        "commander": "^14.0.2",
+        "commander": "^14.0.3",
         "express": "^5.2.1",
-        "pg": "^8.16.3",
+        "pg": "^8.20.0",
         "pg-format": "^1.0.4"
     },
     "devDependencies": {
-        "eslint": "^9.39.2",
-        "prettier": "^3.7.4"
+        "eslint": "^10.2.0",
+        "prettier": "^3.8.3"
     },
     "config": {
         "docker_tag": "gochomugo/local-webhooks"
