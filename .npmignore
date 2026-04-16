@@ -1,8 +1,8 @@
 *
-!bin/
-!schemas/
-!src/
-!www/
+!bin/**
+!schemas/**
+!src/**
+!www/**
 !LICENSE
 !package*.json
 !README.md
