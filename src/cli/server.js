@@ -149,6 +149,7 @@ async function main() {
             );
         END$$;
 `);
+        console.log("[*] Database initialized");
 
         // Restore state.
         const result = await db
