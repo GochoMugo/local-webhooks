@@ -15,7 +15,7 @@ const paths = {
 const pkg = require("../../package.json");
 
 // Database connection.
-const db = new pg.Client({
+const pool = new pg.Pool({
     database: process.env.PGDATABASE || "test",
     host: process.env.PGHOST || "localhost",
     password: process.env.PGPASSWORD || "password",
@@ -128,8 +128,9 @@ app.use("/assets", express.static(paths.assets));
 
 async function main() {
     // Init database.
+    let db;
     try {
-        await db.connect();
+        db = await pool.connect();
         await db.query(`
         DO $$
         BEGIN
@@ -164,6 +165,9 @@ async function main() {
         if (error.code !== "ECONNREFUSED") {
             throw error;
         }
+        console.error(error);
+    } finally {
+        db?.release();
     }
 
     // Start server.
@@ -176,20 +180,29 @@ async function main() {
 
 async function incrementRequestCount(type) {
     const sequence_type = `${type}_request_count`;
-    await db
-        .query(
+    let db;
+    try {
+        db = await pool.connect();
+        await db.query(
             pgFormat(
                 `
-          INSERT INTO requests (count, type)
-              VALUES (NEXTVAL(%L), %L)
-              ON CONFLICT (type) DO UPDATE SET
-                  count = excluded.count;
-`,
+            INSERT INTO requests (count, type)
+                VALUES (NEXTVAL(%L), %L)
+                ON CONFLICT (type) DO UPDATE SET
+                    count = excluded.count;
+    `,
                 sequence_type,
                 type,
             ),
-        )
-        .catch(console.error);
+        );
+    } catch (error) {
+        if (error.code !== "ECONNREFUSED") {
+            throw error;
+        }
+        console.error(error);
+    } finally {
+        db?.release();
+    }
     if (type === "webhook") {
         websocketNotificationCount++;
     }
