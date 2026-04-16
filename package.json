@@ -8,7 +8,9 @@
         "cli-tool"
     ],
     "license": "MIT",
-    "repository": "github:gochomugo/local-webhooks",
+    "repository": {
+        "url": "git+https://github.com/GochoMugo/local-webhooks.git"
+    },
     "scripts": {
         "format": "prettier --write '{src,www,.github}/**/*.{html,js,yml}' '{schemas/**/,./}*.{json,md,yml}'",
         "image": "docker build --tag ${npm_package_config_docker_tag}:${npm_package_version} .",
