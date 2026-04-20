@@ -8,6 +8,7 @@
 No signup is required — feel free to use the demo to explore how Local Webhooks works. Please use the public demo responsibly.
 
 [![Docker Hub](https://img.shields.io/docker/v/gochomugo/local-webhooks?label=docker&logo=docker)](https://hub.docker.com/r/gochomugo/local-webhooks)
+[![npm](https://img.shields.io/npm/v/local-webhooks?logo=npm)](https://www.npmjs.com/package/local-webhooks)
 
 ---
 
