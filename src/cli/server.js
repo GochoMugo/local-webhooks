@@ -83,7 +83,7 @@ app.all("/webhook/:appSecret", function (req, res) {
                         notificationId,
                         webhookPayload: {
                             body: chunks.join(""),
-                            headers: req.headers,
+                            headers: cleanHeaders(req.headers),
                             method: req.method,
                             query: req.query,
                         },
@@ -92,6 +92,17 @@ app.all("/webhook/:appSecret", function (req, res) {
             );
     });
 });
+
+function cleanHeaders(headers) {
+    headers = Object.assign({}, headers);
+    const forbiddenKeys = [/^host$/, /^via$/, /^x-forwarded-.*$/];
+    Object.keys(headers).forEach((key) => {
+        if (forbiddenKeys.find((i) => i.test(key))) {
+            delete headers[key];
+        }
+    });
+    return headers;
+}
 
 // Finalize the webhook request with data from websocket.
 function endWebhookResponse(websocketRequest) {
