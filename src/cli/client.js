@@ -94,7 +94,7 @@ websocket.on("request", function (websocketNotification) {
     if (opts.verbose) {
         console.log(
             chalk.bgGray(
-                "webhook payload: " + JSON.stringify(webhookPayload, null, 2),
+                "- webhook payload: " + JSON.stringify(webhookPayload, null, 2),
             ),
         );
     }
@@ -109,8 +109,12 @@ websocket.on("request", function (websocketNotification) {
                 .join("&");
     }
 
+    const destUrl = `${localApp.url}${qs}`;
+    if (opts.verbose) {
+        console.log(chalk.bgGray(`- forwarding payload to: ${destUrl}`));
+    }
     const appRequest = http.request(
-        `${localApp.url}${qs}`,
+        destUrl,
         {
             headers: webhookPayload.headers,
             method: webhookPayload.method || "POST",
@@ -128,14 +132,23 @@ websocket.on("request", function (websocketNotification) {
             // Once complete data is received from local app,
             // send response to websocket server.
             res.on("end", () => {
+                const webhookResponse = {
+                    body: chunks.join(""),
+                    headers: res.headers,
+                    statusCode: res.statusCode,
+                };
+                if (opts.verbose) {
+                    console.log(
+                        chalk.bgGray(
+                            "- webhook response: " +
+                                JSON.stringify(webhookResponse, null, 2),
+                        ),
+                    );
+                }
                 websocket
                     .request("response", {
                         notificationId,
-                        webhookPayload: {
-                            body: chunks.join(""),
-                            headers: res.headers,
-                            statusCode: res.statusCode,
-                        },
+                        webhookPayload: webhookResponse,
                     })
                     .catch(onError);
             });
