@@ -93,6 +93,16 @@ app.all("/webhook/:appSecret", function (req, res) {
     });
 });
 
+// Homepage.
+app.get("/", function (req, res) {
+    console.log("[*] Serving homepage");
+    incrementRequestCount("homepage");
+    return res.sendFile(paths.homepage);
+});
+
+// Assets
+app.use("/assets", express.static(paths.assets));
+
 function cleanHeaders(headers) {
     headers = Object.assign({}, headers);
     const forbiddenKeys = [/^host$/, /^via$/, /^x-forwarded-.*$/];
@@ -127,15 +137,35 @@ function endWebhookResponse(websocketRequest) {
         .send(webhookPayload.body);
 }
 
-// Homepage.
-app.get("/", function (req, res) {
-    console.log("[*] Serving homepage");
-    incrementRequestCount("homepage");
-    return res.sendFile(paths.homepage);
-});
-
-// Assets
-app.use("/assets", express.static(paths.assets));
+async function incrementRequestCount(type) {
+    const sequence_type = `${type}_request_count`;
+    let db;
+    try {
+        db = await pool.connect();
+        await db.query(
+            pgFormat(
+                `
+            INSERT INTO requests (count, type)
+                VALUES (NEXTVAL(%L), %L)
+                ON CONFLICT (type) DO UPDATE SET
+                    count = excluded.count;
+    `,
+                sequence_type,
+                type,
+            ),
+        );
+    } catch (error) {
+        if (error.code !== "ECONNREFUSED") {
+            throw error;
+        }
+        console.error(error);
+    } finally {
+        db?.release();
+    }
+    if (type === "webhook") {
+        websocketNotificationCount++;
+    }
+}
 
 async function main() {
     // Init database.
@@ -188,36 +218,6 @@ async function main() {
         process.env.HTTP_HOST || "0.0.0.0",
         () => console.log("[*] Server ready"),
     );
-}
-
-async function incrementRequestCount(type) {
-    const sequence_type = `${type}_request_count`;
-    let db;
-    try {
-        db = await pool.connect();
-        await db.query(
-            pgFormat(
-                `
-            INSERT INTO requests (count, type)
-                VALUES (NEXTVAL(%L), %L)
-                ON CONFLICT (type) DO UPDATE SET
-                    count = excluded.count;
-    `,
-                sequence_type,
-                type,
-            ),
-        );
-    } catch (error) {
-        if (error.code !== "ECONNREFUSED") {
-            throw error;
-        }
-        console.error(error);
-    } finally {
-        db?.release();
-    }
-    if (type === "webhook") {
-        websocketNotificationCount++;
-    }
 }
 
 main();
